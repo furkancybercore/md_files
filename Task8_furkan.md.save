@@ -1,0 +1,9 @@
+^C
+^C
+cd ~/Documents/GitHub && find . -name "md_files*" -type f -o -type d | xargs ls -la
+^C
+ls -la ~/Documents/GitHub/
+^C
+touch ~/Documents/GitHub/task8_furkan.md ~/Documents/GitHub/pretask8_furkan.md
+^C
+# Task 8: Implementing 'Update Player Profile' Feature
