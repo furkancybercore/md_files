@@ -1,20 +1,18 @@
 # Postman Guide for Poker Backend API
 
-This guide will help you test the Poker Backend API using Postman, a powerful API development and testing tool.
+This guide will help you test the Poker Backend API using Postman, a powerful API development and testing tool. I've reviewed your codebase and included only endpoints that are actually implemented.
 
 ## Table of Contents
 1. [Before You Begin](#before-you-begin)
 2. [Setting Up Postman](#setting-up-postman)
 3. [Creating a Collection](#creating-a-collection)
-4. [Basic API Access](#basic-api-access)
-5. [Player Operations](#player-operations)
-6. [Event Operations](#event-operations)
-7. [Updating Player Profiles](#updating-player-profiles)
-8. [Advanced Postman Features](#advanced-postman-features)
-9. [Automated Testing](#automated-testing)
-10. [Environment Variables](#environment-variables)
-11. [Request Chaining](#request-chaining)
-12. [Troubleshooting](#troubleshooting)
+4. [Player Operations](#player-operations)
+5. [Event Operations](#event-operations)
+6. [Advanced Postman Features](#advanced-postman-features)
+7. [Automated Testing](#automated-testing)
+8. [Environment Variables](#environment-variables)
+9. [Request Chaining](#request-chaining)
+10. [Troubleshooting](#troubleshooting)
 
 ## Before You Begin
 
@@ -54,65 +52,6 @@ Collections in Postman help you organize related requests for easier management 
 5. In the Variables tab, add these collection variables:
    - `baseUrl`: `http://127.0.0.1:8000` (initial value and current value)
 6. Click "Save" to save your collection settings
-
-## Basic API Access
-
-Most endpoints in the Poker Backend API are accessible without authentication. Here's how to interact with them.
-
-### Registration (POST)
-
-1. Create a new request in your collection
-2. Set the request method to POST
-3. Set the URL to `{{baseUrl}}/players/register/`
-4. Go to the "Body" tab
-5. Select "raw" and "JSON" format
-6. Enter the following JSON data:
-```json
-{
-    "email": "john@example.com",
-    "nickname": "johndoe",
-    "password": "SecurePassword123"
-}
-```
-7. Save the request as "Register Player"
-8. Click "Send" to execute the request
-
-**Expected Response:**
-```json
-{
-    "message": "Player registered successfully"
-}
-```
-
-### Login (POST)
-
-1. Create a new request in your collection
-2. Set the request method to POST
-3. Set the URL to `{{baseUrl}}/players/login/`
-4. Go to the "Body" tab
-5. Select "raw" and "JSON" format
-6. Enter the following JSON data:
-```json
-{
-    "email": "john@example.com",
-    "password": "SecurePassword123"
-}
-```
-7. Save the request as "Login"
-8. Click "Send" to execute the request
-
-**Expected Response:**
-```json
-{
-    "message": "Login successful",
-    "player": {
-        "nickname": "johndoe",
-        "email": "john@example.com",
-        "balance": 0,
-        "win_points": 0
-    }
-}
-```
 
 ## Player Operations
 
@@ -154,53 +93,56 @@ Most endpoints in the Poker Backend API are accessible without authentication. H
 ]
 ```
 
-### Get Player by ID (GET)
-
-1. Create a new request in your collection
-2. Set the request method to GET
-3. Set the URL to `{{baseUrl}}/players/74647891/` (replace with an actual user_id from your data)
-4. Save the request as "Get Player by ID"
-5. Click "Send" to execute the request
-
-**Expected Response:**
-```json
-{
-    "user_id": 74647891,
-    "email": "test@example.com",
-    "nickname": "testplayer",
-    "balance": 0,
-    "win_points": 0,
-    "created_at": "2025-03-13T23:21:16.755373Z"
-}
-```
-
-### Adjust Player Balance (POST)
+### Register Player (POST)
 
 1. Create a new request in your collection
 2. Set the request method to POST
-3. Set the URL to `{{baseUrl}}/players/adjust_balance/`
+3. Set the URL to `{{baseUrl}}/players/register/`
 4. Go to the "Body" tab
 5. Select "raw" and "JSON" format
 6. Enter the following JSON data:
 ```json
 {
-    "user_id": "74647891",
-    "amount": 100,
-    "description": "Initial deposit"
+    "email": "new_player@example.com",
+    "nickname": "newplayer",
+    "password": "SecurePassword123"
 }
 ```
-7. Save the request as "Adjust Balance"
+7. Save the request as "Register Player"
 8. Click "Send" to execute the request
 
 **Expected Response:**
 ```json
 {
-    "message": "Balance adjusted successfully",
+    "message": "Player registered successfully"
+}
+```
+
+### Login Player (POST)
+
+1. Create a new request in your collection
+2. Set the request method to POST
+3. Set the URL to `{{baseUrl}}/players/login/`
+4. Go to the "Body" tab
+5. Select "raw" and "JSON" format
+6. Enter the following JSON data:
+```json
+{
+    "email": "test@example.com",
+    "password": "test123"
+}
+```
+7. Save the request as "Login Player"
+8. Click "Send" to execute the request
+
+**Expected Response:**
+```json
+{
+    "message": "Login successful",
     "player": {
-        "user_id": 74647891,
         "nickname": "testplayer",
         "email": "test@example.com",
-        "balance": 100,
+        "balance": 0,
         "win_points": 0
     }
 }
@@ -219,7 +161,7 @@ Most endpoints in the Poker Backend API are accessible without authentication. H
 ```json
 {
     "event_name": "Weekend Poker Night",
-    "creator_id": "74647891",
+    "creator_id": 74647891,
     "max_capacity": 8,
     "small_blind": 5,
     "big_blind": 10,
@@ -231,23 +173,14 @@ Most endpoints in the Poker Backend API are accessible without authentication. H
     "regularity": "weekly"
 }
 ```
-7. Go to the "Scripts" tab and in the "Post-response" section, add this script to save the event ID:
-```javascript
-var jsonData = pm.response.json();
-if (jsonData.event && jsonData.event.id) {
-    pm.collectionVariables.set("event_id", jsonData.event.id);
-    console.log("Event ID saved: " + jsonData.event.id);
-}
-```
-8. Save the request as "Create Event"
-9. Click "Send" to execute the request
+7. Save the request as "Create Event"
+8. Click "Send" to execute the request
 
 **Expected Response:**
 ```json
 {
     "message": "Event created successfully",
     "event": {
-        "id": 1,
         "event_name": "Weekend Poker Night",
         "max_capacity": 8,
         "small_blind": 5,
@@ -327,8 +260,8 @@ if (jsonData.event && jsonData.event.id) {
 6. Enter the following JSON data:
 ```json
 {
-    "user_id": "27390727",
-    "event_id": "1"
+    "user_id": 27390727,
+    "event_id": 1
 }
 ```
 7. Save the request as "Join Event"
@@ -338,220 +271,6 @@ if (jsonData.event && jsonData.event.id) {
 ```json
 {
     "message": "Player joined the Event successfully"
-}
-```
-
-### Leave Event (POST)
-
-1. Create a new request in your collection
-2. Set the request method to POST
-3. Set the URL to `{{baseUrl}}/events/leave`
-4. Go to the "Body" tab
-5. Select "raw" and "JSON" format
-6. Enter the following JSON data:
-```json
-{
-    "user_id": "27390727",
-    "event_id": "1"
-}
-```
-7. Save the request as "Leave Event"
-8. Click "Send" to execute the request
-
-**Expected Response:**
-```json
-{
-    "message": "Player left the Event successfully"
-}
-```
-
-### Update Event (PUT/PATCH)
-
-1. Create a new request in your collection
-2. Set the request method to PATCH
-3. Set the URL to `{{baseUrl}}/events/1/` (replace 1 with your event_id)
-4. Go to the "Body" tab
-5. Select "raw" and "JSON" format
-6. Enter the following JSON data:
-```json
-{
-    "event_name": "Updated Poker Night",
-    "small_blind": 10,
-    "big_blind": 20
-}
-```
-7. Save the request as "Update Event"
-8. Click "Send" to execute the request
-
-**Expected Response:**
-```json
-{
-    "message": "Event updated successfully",
-    "event": {
-        "id": 1,
-        "event_name": "Updated Poker Night",
-        "max_capacity": 8,
-        "small_blind": 10,
-        "big_blind": 20,
-        "required_deposit": 100,
-        "location": "123 Poker St, Card City",
-        "game_date": "2025-04-15",
-        "start_time": "19:00:00",
-        "duration": 240,
-        "created_at": "2025-03-15T11:00:00Z"
-    }
-}
-```
-
-## Updating Player Profiles
-
-This section focuses on testing the player profile update feature.
-
-### Update Nickname (PATCH)
-
-1. Create a new request in your collection
-2. Set the request method to PATCH
-3. Set the URL to `{{baseUrl}}/players/profile/74647891/` (replace with your user_id)
-4. Go to the "Body" tab
-5. Select "raw" and "JSON" format
-6. Enter the following JSON data:
-```json
-{
-    "nickname": "test_poker_master"
-}
-```
-7. Save the request as "Update Nickname"
-8. Click "Send" to execute the request
-
-**Expected Response:**
-```json
-{
-    "message": "Profile updated successfully",
-    "player": {
-        "user_id": 74647891,
-        "nickname": "test_poker_master",
-        "email": "test@example.com",
-        "balance": 100,
-        "win_points": 0
-    }
-}
-```
-
-### Update Email (PATCH)
-
-1. Create a new request in your collection
-2. Set the request method to PATCH
-3. Set the URL to `{{baseUrl}}/players/profile/74647891/` (replace with your user_id)
-4. Go to the "Body" tab
-5. Select "raw" and "JSON" format
-6. Enter the following JSON data:
-```json
-{
-    "email": "test.updated@example.com"
-}
-```
-7. Save the request as "Update Email"
-8. Click "Send" to execute the request
-
-**Expected Response:**
-```json
-{
-    "message": "Profile updated successfully",
-    "player": {
-        "user_id": 74647891,
-        "nickname": "test_poker_master",
-        "email": "test.updated@example.com",
-        "balance": 100,
-        "win_points": 0
-    }
-}
-```
-
-### Update Password (PATCH)
-
-1. Create a new request in your collection
-2. Set the request method to PATCH
-3. Set the URL to `{{baseUrl}}/players/profile/74647891/` (replace with your user_id)
-4. Go to the "Body" tab
-5. Select "raw" and "JSON" format
-6. Enter the following JSON data:
-```json
-{
-    "current_password": "test123",
-    "new_password": "NewSecurePassword456!"
-}
-```
-7. Save the request as "Update Password"
-8. Click "Send" to execute the request
-
-**Expected Response:**
-```json
-{
-    "message": "Profile updated successfully",
-    "player": {
-        "user_id": 74647891,
-        "nickname": "test_poker_master",
-        "email": "test.updated@example.com",
-        "balance": 100,
-        "win_points": 0
-    }
-}
-```
-
-### Update Multiple Fields (PUT)
-
-1. Create a new request in your collection
-2. Set the request method to PUT
-3. Set the URL to `{{baseUrl}}/players/profile/74647891/` (replace with your user_id)
-4. Go to the "Body" tab
-5. Select "raw" and "JSON" format
-6. Enter the following JSON data:
-```json
-{
-    "nickname": "test_complete_update",
-    "email": "test.complete@example.com",
-    "current_password": "NewSecurePassword456!",
-    "new_password": "FinalPassword789@"
-}
-```
-7. Save the request as "Update Full Profile"
-8. Click "Send" to execute the request
-
-**Expected Response:**
-```json
-{
-    "message": "Profile updated successfully",
-    "player": {
-        "user_id": 74647891,
-        "nickname": "test_complete_update",
-        "email": "test.complete@example.com",
-        "balance": 100,
-        "win_points": 0
-    }
-}
-```
-
-### Testing Validation Errors
-
-1. Try updating with an already used nickname:
-```json
-{
-    "nickname": "johndoe"
-}
-```
-
-2. Try updating with an invalid email format:
-```json
-{
-    "email": "not-an-email"
-}
-```
-
-3. Try changing password with incorrect current password:
-```json
-{
-    "current_password": "WrongPassword",
-    "new_password": "NewPassword123"
 }
 ```
 
@@ -604,13 +323,13 @@ pm.test("Count players", function() {
 });
 
 // Find player by email
-var johnPlayer = jsonData.find(function(player) {
-    return player.email === "john@example.com";
+var testPlayer = jsonData.find(function(player) {
+    return player.email === "test@example.com";
 });
 
-if (johnPlayer) {
-    console.log(`Found John: ${johnPlayer.nickname} (ID: ${johnPlayer.user_id})`);
-    pm.collectionVariables.set("johnUserId", johnPlayer.user_id);
+if (testPlayer) {
+    console.log(`Found test player: ${testPlayer.nickname} (ID: ${testPlayer.user_id})`);
+    pm.collectionVariables.set("testUserId", testPlayer.user_id);
 }
 
 // Filter active players (with non-null email)
@@ -651,7 +370,7 @@ pm.test("Status should be 400 Bad Request", function() {
 
 pm.test("Should return validation errors", function() {
     var jsonData = pm.response.json();
-    pm.expect(jsonData.errors).to.exist;
+    pm.expect(jsonData).to.have.property('email');
 });
 ```
 
@@ -703,14 +422,14 @@ Environments in Postman allow you to run the same collection against different s
    - `testUserId`: `74647891`
 5. Save the environment
 
-6. Create another environment named "Production"
+6. Create another environment named "Production" (hypothetical for practice)
 7. Add these variables:
-   - `baseUrl`: `https://poker-api.example.com`
+   - `baseUrl`: `https://poker-api.example.com` (hypothetical address)
    - `testUserId`: `74647891`
 8. Save the environment
 
 9. In your requests, update URLs to use both variables:
-   - Change URLs to use `{{baseUrl}}/players/{{testUserId}}/` where appropriate
+   - Change URLs to use `{{baseUrl}}/players/` format
 
 10. Switch between environments using the dropdown in the upper right corner
 
@@ -738,16 +457,13 @@ pm.collectionVariables.set("workflow_password", "SecurePassword123");
     "password": "{{workflow_password}}"
 }
 ```
-7. In the "Scripts" tab under "Post-response", add user ID saving logic:
+7. In the "Scripts" tab under "Post-response", add (hypothetical - your API doesn't return user_id in login):
 ```javascript
 var jsonData = pm.response.json();
-if (jsonData.player && jsonData.player.user_id) {
-    pm.collectionVariables.set("workflow_user_id", jsonData.player.user_id);
-    console.log("User ID saved: " + jsonData.player.user_id);
-}
+console.log("User logged in successfully");
 ```
 
-8. Continue adding numbered requests to complete your workflow, using the saved variables
+8. Continue adding numbered requests to complete your workflow
 
 ### Use a Collection Runner to Execute the Workflow
 
@@ -795,22 +511,71 @@ Use these Postman features to debug issues:
 
 5. **Network Status**: If you're having connection issues, check your network status in the bottom right corner of Postman
 
-## Practice Exercise: Create Your Own Endpoints
+---
 
-Now that you've learned how to use Postman, try creating requests for these hypothetical endpoints:
+## Note About Hypothetical Endpoints
 
-1. **Search Events**: GET request to `{{baseUrl}}/events/search?location=New%20York&date=2025-05-01`
+The following endpoints do not currently exist in your codebase but would be useful for future development. These are included here as practice examples for Postman usage, but they will not work with your current API:
 
-2. **Get Player Statistics**: GET request to `{{baseUrl}}/players/74647891/stats`
+### Get Player by ID (Hypothetical)
 
-3. **Update Event Status**: PATCH request to `{{baseUrl}}/events/1/status` with body:
-   ```json
-   {
-     "status": "cancelled",
-     "reason": "Venue unavailable"
-   }
-   ```
+This endpoint is not currently implemented in your API.
 
-4. **Create a Tournament**: POST request to `{{baseUrl}}/tournaments/create` with a body containing all required tournament details
+1. Create a new request in your collection
+2. Set the request method to GET
+3. Set the URL to `{{baseUrl}}/players/74647891/` (replace with an actual user_id from your data)
+4. Save the request as "Get Player by ID (Hypothetical)"
 
-These exercises will help you practice creating and structuring requests in Postman, even if the endpoints don't exist yet in your actual API. 
+### Adjust Player Balance (Hypothetical)
+
+This endpoint is not currently implemented in your API.
+
+1. Create a new request in your collection
+2. Set the request method to POST
+3. Set the URL to `{{baseUrl}}/players/adjust_balance/`
+4. Go to the "Body" tab
+5. Select "raw" and "JSON" format
+6. Enter the following JSON data:
+```json
+{
+    "user_id": "74647891",
+    "amount": 100,
+    "description": "Initial deposit"
+}
+```
+7. Save the request as "Adjust Balance (Hypothetical)"
+
+### Leave Event (Hypothetical)
+
+This endpoint is not currently implemented in your API.
+
+1. Create a new request in your collection
+2. Set the request method to POST
+3. Set the URL to `{{baseUrl}}/events/leave`
+4. Go to the "Body" tab
+5. Select "raw" and "JSON" format
+6. Enter the following JSON data:
+```json
+{
+    "user_id": "27390727",
+    "event_id": "1"
+}
+```
+7. Save the request as "Leave Event (Hypothetical)"
+
+### Update Player Profile (Hypothetical)
+
+This endpoint is not currently implemented in your API.
+
+1. Create a new request in your collection
+2. Set the request method to PATCH
+3. Set the URL to `{{baseUrl}}/players/profile/74647891/`
+4. Go to the "Body" tab
+5. Select "raw" and "JSON" format
+6. Enter the following JSON data:
+```json
+{
+    "nickname": "updated_nickname"
+}
+```
+7. Save the request as "Update Player Profile (Hypothetical)" 
