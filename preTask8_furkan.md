@@ -40,7 +40,12 @@ First, let's examine the current Player model and understand its structure:
 
 Let's practice with DRF's ModelSerializer to understand how it works:
 
-1. Create a test file `serializer_test.py` with the following code:
+1. **Run the Django shell**:
+   ```bash
+   python manage.py shell
+   ```
+
+2. **Copy and paste the following code** into the shell to test serializers:
    ```python
    from rest_framework import serializers
    from app_core.poker_event.models import Player
@@ -67,17 +72,20 @@ Let's practice with DRF's ModelSerializer to understand how it works:
    print(serializer.validated_data if serializer.is_valid() else serializer.errors)
    ```
 
-2. Run this script:
-   ```bash
-   python -c "exec(open('serializer_test.py').read())"
-   ```
-
 ## Exercise 3: Practice with Validation
 
 Let's practice implementing custom validation in serializers:
 
-1. Extend your `serializer_test.py` file:
+1. **Continue in the Django shell** or start a new shell session:
+   ```bash
+   python manage.py shell
+   ```
+
+2. **Copy and paste the following code** to test validation:
    ```python
+   from rest_framework import serializers
+   from app_core.poker_event.models import Player
+   
    class ValidatedPlayerSerializer(serializers.ModelSerializer):
        class Meta:
            model = Player
@@ -110,13 +118,16 @@ Let's practice implementing custom validation in serializers:
        print()
    ```
 
-2. Run the updated script to see validation in action.
-
 ## Exercise 4: Practice with Update Operations
 
 Let's practice updating model instances with serializers:
 
-1. Create a new file `update_test.py`:
+1. **Run the Django shell**:
+   ```bash
+   python manage.py shell
+   ```
+
+2. **Copy and paste the following code** to test update operations:
    ```python
    from rest_framework import serializers
    from app_core.poker_event.models import Player
@@ -150,8 +161,6 @@ Let's practice updating model instances with serializers:
    else:
        print(f"Validation failed: {serializer.errors}")
    ```
-
-2. Run this script to see how updating works.
 
 ## Exercise 5: Set Up Postman for API Testing
 
@@ -206,6 +215,11 @@ Let's understand how token authentication works:
    ```
 
 3. In the Django shell, try creating a token:
+   ```bash
+   python manage.py shell
+   ```
+   
+   Then in the shell:
    ```python
    from rest_framework.authtoken.models import Token
    from app_core.poker_event.models import Player
