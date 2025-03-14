@@ -314,8 +314,13 @@ For testing REST APIs, Postman is an excellent tool. Let's set it up:
      ```
    - Save the request
 
+5. Create a request to get all players:
+   - Add another request, name it "Get All Players"
+   - Set method to GET and URL to `http://localhost:8000/players/`
+   - Save the request
+
    **Expected Result:**
-   You should have a Postman collection with two requests ready for testing. No output is expected at this stage since we're just setting up the test environment. You'll use these requests later when testing your implementation.
+   You should have a Postman collection with three requests ready for testing. No output is expected at this stage since we're just setting up the test environment. You'll use these requests later when testing your implementation.
 
    **Key Benefits:**
    - Allows quick testing of API endpoints without writing code
@@ -325,74 +330,54 @@ For testing REST APIs, Postman is an excellent tool. Let's set it up:
 
 Refer to our [Postman Testing Guide](POSTMAN_GUIDE_POKER.md) for more detailed instructions on API testing.
 
-## Exercise 6: Explore Token Authentication
+## Exercise 6: Explore User Identification Methods
 
-**Why this is important:** Our profile update endpoint needs to be secured so that users can only update their own profiles. Token authentication is a common way to secure REST APIs and identify users.
+**Why this is important:** When implementing user profile updates, we need a way to identify which user is making the request and ensure users can only update their own profiles.
 
-Let's understand how token authentication works:
+Let's explore a few ways to identify users in API requests:
 
-1. In Django settings, ensure `rest_framework.authtoken` is in `INSTALLED_APPS`
-
-2. Run migrations to create the token table:
-   ```bash
-   python manage.py migrate
+1. **URL Parameters:** Using user IDs in the URL path
+   ```
+   GET /players/74647891/  # Get details for a specific player
+   PATCH /players/74647891/  # Update a specific player
    ```
 
-3. In the Django shell, try creating a token:
-   ```bash
-   python manage.py shell
+2. **Request Body:** Including user ID in the request body
+   ```json
+   {
+     "user_id": 74647891,
+     "nickname": "new_nickname"
+   }
    ```
-   
-   Then in the shell:
+
+3. **Session-based Authentication:** If your Django app is using sessions
    ```python
-   from rest_framework.authtoken.models import Token
-   from app_core.poker_event.models import Player
-   
-   # Get a player
-   player = Player.objects.first()
-   
-   # Create a token
-   token, created = Token.objects.get_or_create(user=player)
-   print(f"Token: {token.key}")
-   print(f"Created new: {created}")
-   
-   # Retrieve token for a user
-   token = Token.objects.get(user=player)
-   print(f"Retrieved token: {token.key}")
+   # In your view
+   def update_profile(request):
+       # The current user is available in request.user
+       user = request.user
+       # Now update the user's profile
    ```
 
-   **Expected Output:**
-   ```
-   >>> player = Player.objects.first()
-   >>> token, created = Token.objects.get_or_create(user=player)
-   >>> print(f"Token: {token.key}")
-   Token: a1b2c3d4e5f6g7h8i9j0...  # Your token will be different
-   >>> print(f"Created new: {created}")
-   Created new: True  # First time will be True, subsequent runs will be False
-   
-   >>> token = Token.objects.get(user=player)
-   >>> print(f"Retrieved token: {token.key}")
-   Retrieved token: a1b2c3d4e5f6g7h8i9j0...  # Same token as above
-   ```
+4. Let's test identifying users by user_id in the URL:
+   - In Postman, create a request named "Get Player by ID"
+   - Set method to GET and URL to `http://localhost:8000/players/74647891/` (use an actual user_id from your database)
+   - Save and send the request
+   - You should get details for just that specific player
 
-   Note: If you get an error like `TypeError: 'user' is an invalid keyword argument for this function`, it might mean your Player model isn't properly set up as an auth user model. In that case, you may need to check how authentication is implemented in your project.
+5. When implementing the profile update feature, you'll need to:
+   - Create an endpoint like `/players/profile/<user_id>/`
+   - In your view, check if the requested user_id matches the authenticated user
+   - Only allow updates if the user is updating their own profile
 
-4. In Postman, create a request that uses token authentication:
-   - Add a new request called "Test Authentication"
-   - Set method to GET and URL to any endpoint like `http://localhost:8000/players/`
-   - In the Headers tab, add:
-     - Key: `Authorization`
-     - Value: `Token YOUR_TOKEN_KEY` (replace with actual token)
-   - Save the request
+**Expected Result:**
+You'll understand different ways to identify users when making API requests, which will be important when implementing the profile update feature.
 
-   **Expected Result:**
-   You'll have a Postman request configured to use token authentication. When you send this request, the server should recognize your authenticated user if token authentication is properly set up.
-
-   **Key Benefits:**
-   - Allows us to identify which user is making a request
-   - Ensures users can only update their own profiles
-   - Provides a secure way to authenticate API requests
-   - For our profile update feature, we'll use token authentication to secure the endpoint
+**Key Considerations:**
+- Choose an identification method that works with your current authentication system
+- Always verify the user has permission to update the profile they're trying to modify
+- For security, add validation to ensure users can only update their own profiles
+- In Django views, you can implement permission checks before processing updates
 
 ## Next Steps: Implementing Task 8
 
