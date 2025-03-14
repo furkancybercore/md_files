@@ -36,6 +36,22 @@ First, let's examine the current Player model and understand its structure:
    player.check_password("wrong")    # Should return False
    ```
 
+   **Expected Output:**
+   ```
+   >>> Player.objects.all()
+   <QuerySet []>  # Initially empty, then after creating a player:
+   <QuerySet [<Player: testplayer>]>
+   
+   >>> player = Player(email="test@example.com", nickname="testplayer")
+   >>> player.set_password("test123")
+   >>> player.save()
+   
+   >>> player.check_password("test123")
+   True
+   >>> player.check_password("wrong")
+   False
+   ```
+
 ## Exercise 2: Practicing with Model Serializers
 
 Let's practice with DRF's ModelSerializer to understand how it works:
@@ -70,6 +86,40 @@ Let's practice with DRF's ModelSerializer to understand how it works:
    serializer = PlayerTestSerializer(data=test_data, partial=True)
    print(serializer.is_valid())
    print(serializer.validated_data if serializer.is_valid() else serializer.errors)
+   ```
+
+   **Expected Output:**
+   ```
+   >>> serializer = PlayerTestSerializer(player)
+   >>> print(serializer.data)
+   {'user_id': 74647891, 'email': 'test@example.com', 'nickname': 'testplayer', 'balance': 0}
+   
+   >>> serializer = PlayerTestSerializer(data=test_data, partial=True)
+   >>> print(serializer.is_valid())
+   False
+   >>> print(serializer.validated_data if serializer.is_valid() else serializer.errors)
+   {'email': [ErrorDetail(string='player with this email already exists.', code='unique')]}
+   ```
+   
+   The validation fails because we're trying to use an email that already exists in the database. This shows how ModelSerializer automatically applies model-level validation rules.
+
+   Try again with a different email:
+   ```python
+   test_data = {
+       'email': 'another@example.com',
+       'nickname': 'testnick'
+   }
+   serializer = PlayerTestSerializer(data=test_data, partial=True)
+   print(serializer.is_valid())
+   print(serializer.validated_data if serializer.is_valid() else serializer.errors)
+   ```
+
+   **Expected Output:**
+   ```
+   >>> print(serializer.is_valid())
+   True
+   >>> print(serializer.validated_data)
+   {'email': 'another@example.com', 'nickname': 'testnick'}
    ```
 
 ## Exercise 3: Practice with Validation
@@ -118,6 +168,23 @@ Let's practice implementing custom validation in serializers:
        print()
    ```
 
+   **Expected Output:**
+   ```
+   Testing {'email': 'good@example.com', 'nickname': 'goodname'}:
+     Valid: True
+     Result: {'email': 'good@example.com', 'nickname': 'goodname'}
+
+   Testing {'email': 'bad@gmail.com', 'nickname': 'goodname'}:
+     Valid: False
+     Result: {'email': [ErrorDetail(string='Email must end with @example.com', code='invalid')]}
+
+   Testing {'email': 'good@example.com', 'nickname': 'bad'}:
+     Valid: False
+     Result: {'nickname': [ErrorDetail(string='Nickname must be at least 5 characters', code='invalid')]}
+   ```
+   
+   This demonstrates how custom validation methods can be added to serializers to enforce specific business rules.
+
 ## Exercise 4: Practice with Update Operations
 
 Let's practice updating model instances with serializers:
@@ -162,6 +229,25 @@ Let's practice updating model instances with serializers:
        print(f"Validation failed: {serializer.errors}")
    ```
 
+   **Expected Output:**
+   ```
+   >>> player = Player.objects.first()
+   >>> print(f"Original player: {player.nickname}, {player.email}")
+   Original player: testplayer, test@example.com
+   
+   >>> serializer = PlayerUpdateSerializer(player, data={'nickname': 'updated_name'}, partial=True)
+   >>> if serializer.is_valid():
+   ...     updated_player = serializer.save()
+   ...     print(f"Updated player: {updated_player.nickname}, {updated_player.email}")
+   ... else:
+   ...     print(f"Validation failed: {serializer.errors}")
+   ... 
+   Updating player testplayer with {'nickname': 'updated_name'}
+   Updated player: updated_name, test@example.com
+   ```
+   
+   This demonstrates how serializer's `update()` method is called when you call `save()` on an existing instance. The custom `update()` method allows you to control how the instance is updated.
+
 ## Exercise 5: Set Up Postman for API Testing
 
 For testing REST APIs, Postman is an excellent tool. Let's set it up:
@@ -201,6 +287,9 @@ For testing REST APIs, Postman is an excellent tool. Let's set it up:
      ```
    - Save the request
 
+   **Expected Result:**
+   You should have a Postman collection with two requests ready for testing. No output is expected at this stage since we're just setting up the test environment. You'll use these requests later when testing your implementation.
+
 Refer to our [Postman Testing Guide](POSTMAN_GUIDE_POKER.md) for more detailed instructions on API testing.
 
 ## Exercise 6: Explore Token Authentication
@@ -237,6 +326,22 @@ Let's understand how token authentication works:
    print(f"Retrieved token: {token.key}")
    ```
 
+   **Expected Output:**
+   ```
+   >>> player = Player.objects.first()
+   >>> token, created = Token.objects.get_or_create(user=player)
+   >>> print(f"Token: {token.key}")
+   Token: a1b2c3d4e5f6g7h8i9j0...  # Your token will be different
+   >>> print(f"Created new: {created}")
+   Created new: True  # First time will be True, subsequent runs will be False
+   
+   >>> token = Token.objects.get(user=player)
+   >>> print(f"Retrieved token: {token.key}")
+   Retrieved token: a1b2c3d4e5f6g7h8i9j0...  # Same token as above
+   ```
+
+   Note: If you get an error like `TypeError: 'user' is an invalid keyword argument for this function`, it might mean your Player model isn't properly set up as an auth user model. In that case, you may need to check how authentication is implemented in your project.
+
 4. In Postman, create a request that uses token authentication:
    - Add a new request called "Test Authentication"
    - Set method to GET and URL to any endpoint like `http://localhost:8000/players/`
@@ -244,6 +349,9 @@ Let's understand how token authentication works:
      - Key: `Authorization`
      - Value: `Token YOUR_TOKEN_KEY` (replace with actual token)
    - Save the request
+
+   **Expected Result:**
+   You'll have a Postman request configured to use token authentication. When you send this request, the server should recognize your authenticated user if token authentication is properly set up.
 
 ## Next Steps: Implementing Task 8
 
