@@ -99,7 +99,8 @@ For most API endpoints, you'll need to authenticate. The Poker Backend API uses 
     "password": "SecurePassword123"
 }
 ```
-7. Go to the "Tests" tab and add this script to automatically save the token:
+7. Go to the "Scripts" tab (in the middle row of tabs)
+8. Under "Post-response" section, add this script to automatically save the token:
 ```javascript
 // Test if the request was successful
 pm.test("Status code is 200", function () {
@@ -126,8 +127,8 @@ if (jsonData.player && jsonData.player.user_id) {
     console.log("User ID saved: " + jsonData.player.user_id);
 }
 ```
-8. Save the request as "Login"
-9. Click "Send" to execute the request
+9. Save the request as "Login"
+10. Click "Send" to execute the request
 
 **Expected Response:**
 ```json
@@ -144,7 +145,7 @@ if (jsonData.player && jsonData.player.user_id) {
 }
 ```
 
-**Note**: The token will be automatically saved to the `authToken` collection variable if you added the test script.
+**Note**: The token will be automatically saved to the `authToken` collection variable if you added the post-response script.
 
 ### Using Token Authentication
 
@@ -268,7 +269,7 @@ For any request that requires authentication, add the token to the request heade
     "regularity": "weekly"
 }
 ```
-8. Add this to the "Tests" tab to save the event ID:
+8. Go to the "Scripts" tab and in the "Post-response" section, add this script to save the event ID:
 ```javascript
 var jsonData = pm.response.json();
 if (jsonData.event && jsonData.event.id) {
@@ -612,7 +613,7 @@ Pre-request scripts run before a request is sent, allowing you to set up the env
 
 1. Create a new request called "Random User Registration"
 2. Set the method to POST and URL to `{{baseUrl}}/players/register/`
-3. In the Pre-request Script tab, add:
+3. Go to the "Scripts" tab and in the "Pre-request" section, add:
 ```javascript
 // Generate random email and nickname
 const randomNum = Math.floor(Math.random() * 10000);
@@ -641,7 +642,7 @@ Create a request to show how to parse and use response data:
 
 1. Create a new request called "Parse Events Data"
 2. Set the method to GET and URL to `{{baseUrl}}/events/`
-3. In Tests tab, add:
+3. Go to the "Scripts" tab and in the "Post-response" section, add:
 ```javascript
 // Parse the response
 var jsonData = pm.response.json();
@@ -696,7 +697,7 @@ Postman allows you to create automated test suites to validate your API endpoint
     "password": "short"
 }
 ```
-4. In Tests tab, add:
+4. Go to the "Scripts" tab and in the "Post-response" section, add:
 ```javascript
 pm.test("Status should be 400 Bad Request", function() {
     pm.response.to.have.status(400);
@@ -713,7 +714,7 @@ pm.test("Should return validation errors", function() {
 1. Create a request named "Test - Auth Required"
 2. Set method to GET and URL to `{{baseUrl}}/players/profile/{{user_id}}/`
 3. Do NOT add an auth token header
-4. In Tests tab, add:
+4. Go to the "Scripts" tab and in the "Post-response" section, add:
 ```javascript
 pm.test("Should require authentication", function() {
     pm.response.to.have.status(401);
@@ -763,7 +764,7 @@ You can chain requests together to create workflows. Example: Register → Login
 1. Create a folder named "Workflows"
 2. Inside, create a request named "01 - Register New User"
 3. Set up registration with random data (using pre-request script as shown earlier)
-4. In the Tests tab, add:
+4. Go to the "Scripts" tab and in the "Post-response" section, add:
 ```javascript
 // Save email and password for next request
 pm.collectionVariables.set("workflow_email", pm.collectionVariables.get("randomEmail"));
@@ -778,7 +779,7 @@ pm.collectionVariables.set("workflow_password", "SecurePassword123");
     "password": "{{workflow_password}}"
 }
 ```
-7. In Tests, add token saving logic as shown earlier
+7. In the "Scripts" tab under "Post-response", add token saving logic as shown earlier
 
 8. Continue adding numbered requests to complete your workflow
 
