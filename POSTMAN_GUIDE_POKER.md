@@ -495,7 +495,7 @@ console.log("User logged in successfully");
 
 4. **"500 Internal Server Error"**:
    - Check the Django server console for error messages
-   - This usually indicates a problem with the server-side code
+   - This usually indicates a problem with the server-side code 
 
 ### Debugging with Postman
 
