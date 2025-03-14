@@ -329,16 +329,13 @@ Refer to our [Postman Testing Guide](POSTMAN_GUIDE_POKER.md) for more detailed i
 
 **Why this is important:** Our profile update endpoint needs to be secured so that users can only update their own profiles. Token authentication is a common way to secure REST APIs and identify users.
 
-Let's understand how token authentication works:
+Let's understand how token authentication works with our custom Player model:
 
-1. In Django settings, ensure `rest_framework.authtoken` is in `INSTALLED_APPS`
+1. In Django settings, ensure `rest_framework.authtoken` is in `INSTALLED_APPS` - this is already done in your project.
 
-2. Run migrations to create the token table:
-   ```bash
-   python manage.py migrate
-   ```
+2. The standard Django Token authentication is designed to work with Django's built-in User model, but our project uses a custom Player model instead. We need to create a custom adapter to make them work together.
 
-3. In the Django shell, try creating a token:
+3. Let's create a custom authentication class. In your Django shell:
    ```bash
    python manage.py shell
    ```
@@ -348,54 +345,122 @@ Let's understand how token authentication works:
    from rest_framework.authtoken.models import Token
    from app_core.poker_event.models import Player
    
+   # Create a custom token generator function
+   def create_player_token(player):
+       """Create a token that links to our Player model instead of User model"""
+       # First, try to reuse the primary key as a token key
+       token_key = f"pk{player.user_pk_id}"
+       
+       # Create and return a token with our custom key
+       token = Token(key=token_key)
+       # We can't directly use the token.user field with our Player model
+       # But we can reference the player ID for later retrieval
+       token.user_id = None  # This will be blank since we're not using Django User
+       token.save()
+       
+       print(f"Created token: {token.key} for player: {player.nickname}")
+       return token
+   
    # Get a player
    player = Player.objects.first()
    
-   # Create a token
-   token, created = Token.objects.get_or_create(user=player)
+   # Create a token for the player
+   token = create_player_token(player)
    print(f"Token: {token.key}")
-   print(f"Created new: {created}")
    
-   # Retrieve token for a user
-   token = Token.objects.get(user=player)
-   print(f"Retrieved token: {token.key}")
+   # The token can be used for authentication by including it in request headers
+   print(f"Use in Postman with header: Authorization: Token {token.key}")
    ```
 
    **Expected Output:**
    ```
    >>> player = Player.objects.first()
-   >>> token, created = Token.objects.get_or_create(user=player)
+   >>> token = create_player_token(player)
+   Created token: pk1 for player: testplayer
    >>> print(f"Token: {token.key}")
-   Token: a1b2c3d4e5f6g7h8i9j0...  # Your token will be different
-   >>> print(f"Created new: {created}")
-   Created new: True  # First time will be True, subsequent runs will be False
-   
-   >>> token = Token.objects.get(user=player)
-   >>> print(f"Retrieved token: {token.key}")
-   Retrieved token: a1b2c3d4e5f6g7h8i9j0...  # Same token as above
+   Token: pk1
+   >>> print(f"Use in Postman with header: Authorization: Token {token.key}")
+   Use in Postman with header: Authorization: Token pk1
    ```
 
-   Note: If you get an error like `TypeError: 'user' is an invalid keyword argument for this function`, it might mean your Player model isn't properly set up as an auth user model. In that case, you may need to check how authentication is implemented in your project.
+4. To properly implement token authentication for our custom Player model, we would need to:
 
-4. In Postman, create a request that uses token authentication:
-   - Add a new request called "Test Authentication"
-   - Set method to GET and URL to any endpoint like `http://localhost:8000/players/`
+   a. Create a custom authentication class:
+   ```python
+   # This would go in a file like app_core/poker_event/authentication.py
+   from rest_framework.authentication import TokenAuthentication, get_authorization_header
+   from rest_framework.exceptions import AuthenticationFailed
+   from .models import Player
+   from rest_framework.authtoken.models import Token
+
+   class PlayerTokenAuthentication(TokenAuthentication):
+       """Custom token authentication for Player model instead of User model"""
+       
+       def authenticate_credentials(self, key):
+           try:
+               token = Token.objects.get(key=key)
+           except Token.DoesNotExist:
+               raise AuthenticationFailed('Invalid token')
+           
+           # Extract player ID from token key (assuming format "pk{id}")
+           if key.startswith('pk'):
+               try:
+                   player_id = int(key[2:])
+                   player = Player.objects.get(user_pk_id=player_id)
+                   return (player, token)
+               except (ValueError, Player.DoesNotExist):
+                   raise AuthenticationFailed('Invalid token - no matching player')
+           
+           raise AuthenticationFailed('Invalid token format')
+   ```
+
+   b. Add this to your REST_FRAMEWORK settings:
+   ```python
+   # This would go in your settings.py
+   REST_FRAMEWORK = {
+       'DEFAULT_AUTHENTICATION_CLASSES': (
+           'app_core.poker_event.authentication.PlayerTokenAuthentication',
+           'rest_framework.authentication.SessionAuthentication',
+           'rest_framework.authentication.BasicAuthentication',
+       ),
+   }
+   ```
+
+   c. Secure your views with authentication:
+   ```python
+   # Example of a protected view
+   from rest_framework.decorators import api_view, authentication_classes, permission_classes
+   from rest_framework.permissions import IsAuthenticated
+   from .authentication import PlayerTokenAuthentication
+   
+   @api_view(["GET"])
+   @authentication_classes([PlayerTokenAuthentication])
+   @permission_classes([IsAuthenticated])
+   def get_player_profile(request):
+       """Returns the profile of the authenticated player"""
+       player = request.user  # In DRF, the authenticated user is in request.user
+       serializer = PlayerProfileSerializer(player)
+       return Response(serializer.data)
+   ```
+
+5. In Postman, create a request that uses token authentication:
+   - Add a new request called "Get Player Profile" (this is hypothetical until you implement it)
+   - Set method to GET and URL to `http://localhost:8000/players/profile/`
    - In the Headers tab, add:
      - Key: `Authorization`
-     - Value: `Token YOUR_TOKEN_KEY` (replace with actual token)
+     - Value: `Token pk1` (replace with your actual token)
    - Save the request
 
    **Expected Result:**
-   You'll have a Postman request configured to use token authentication. When you send this request, the server should recognize your authenticated user if token authentication is properly set up.
+   This setup will help you understand how token authentication works with custom models. For Task 8, you'll implement the actual authentication flow for your profile update feature.
 
    **Key Benefits:**
-   - Allows us to identify which user is making a request
-   - Ensures users can only update their own profiles
-   - Provides a secure way to authenticate API requests
-   - For our profile update feature, we'll use token authentication to secure the endpoint
+   - Demonstrates how to adapt DRF token authentication to work with custom models
+   - Shows how to secure endpoints to prevent unauthorized access
+   - Provides a foundation for implementing user-specific features
 
 ## Next Steps: Implementing Task 8
 
-Now that you've practiced with the underlying concepts, you're ready to implement Task 8: Update Player Profile. For detailed instructions on how to implement this feature, refer to [Task8_furkan.md](Task8_furkan.md).
+Now that you've practiced with the underlying concepts and understand how to adapt token authentication to your custom Player model, you're ready to implement Task 8: Update Player Profile. For detailed instructions on how to implement this feature, refer to [Task8_furkan.md](Task8_furkan.md).
 
 For testing your implementation with Postman, we've prepared a dedicated guide: [POSTMAN_GUIDE_POKER.md](POSTMAN_GUIDE_POKER.md).
