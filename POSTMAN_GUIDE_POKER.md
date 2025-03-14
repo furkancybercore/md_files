@@ -148,6 +148,148 @@ Collections in Postman help you organize related requests for easier management 
 }
 ```
 
+### Update Player Profile (PUT)
+
+1. Create a new request in your collection
+2. Set the request method to PUT
+3. Set the URL to `{{baseUrl}}/players/profile/74647891/` (replace 74647891 with a valid user_id)
+4. Go to the "Body" tab
+5. Select "raw" and "JSON" format
+6. Enter the following JSON data:
+```json
+{
+    "auth_player_id": "74647891",
+    "nickname": "updated_nickname",
+    "email": "updated_email@example.com"
+}
+```
+7. Save the request as "Update Player Profile"
+8. Click "Send" to execute the request
+
+**Expected Response:**
+```json
+{
+    "message": "Profile updated successfully",
+    "player": {
+        "user_id": 74647891,
+        "nickname": "updated_nickname",
+        "email": "updated_email@example.com",
+        "balance": 0,
+        "win_points": 0
+    }
+}
+```
+
+### Update Player Password (PATCH)
+
+1. Create a new request in your collection
+2. Set the request method to PATCH
+3. Set the URL to `{{baseUrl}}/players/profile/74647891/` (replace 74647891 with a valid user_id)
+4. Go to the "Body" tab
+5. Select "raw" and "JSON" format
+6. Enter the following JSON data:
+```json
+{
+    "auth_player_id": "74647891",
+    "current_password": "current_password",
+    "new_password": "new_secure_password"
+}
+```
+7. Save the request as "Update Player Password"
+8. Click "Send" to execute the request
+
+**Expected Response:**
+```json
+{
+    "message": "Profile updated successfully",
+    "player": {
+        "user_id": 74647891,
+        "nickname": "player_nickname",
+        "email": "player_email@example.com",
+        "balance": 0,
+        "win_points": 0
+    }
+}
+```
+
+### Partial Profile Update (PATCH)
+
+1. Create a new request in your collection
+2. Set the request method to PATCH
+3. Set the URL to `{{baseUrl}}/players/profile/74647891/` (replace 74647891 with a valid user_id)
+4. Go to the "Body" tab
+5. Select "raw" and "JSON" format
+6. Enter the following JSON data to update only the nickname:
+```json
+{
+    "auth_player_id": "74647891",
+    "nickname": "new_cool_nickname"
+}
+```
+7. Save the request as "Partial Profile Update"
+8. Click "Send" to execute the request
+
+**Expected Response:**
+```json
+{
+    "message": "Profile updated successfully",
+    "player": {
+        "user_id": 74647891,
+        "nickname": "new_cool_nickname",
+        "email": "player_email@example.com",
+        "balance": 0,
+        "win_points": 0
+    }
+}
+```
+
+### Testing Profile Update Validation Errors
+
+1. Create a new request in your collection
+2. Set the request method to PUT
+3. Set the URL to `{{baseUrl}}/players/profile/74647891/` (replace 74647891 with a valid user_id)
+4. Go to the "Body" tab
+5. Select "raw" and "JSON" format
+6. Enter the following JSON data with invalid email format:
+```json
+{
+    "auth_player_id": "74647891",
+    "email": "not-a-valid-email"
+}
+```
+7. Save the request as "Test Profile Update Validation"
+8. Click "Send" to execute the request
+
+**Expected Response:**
+```json
+{
+    "email": [
+        "Enter a valid email address."
+    ]
+}
+```
+
+For testing password validation, use:
+```json
+{
+    "auth_player_id": "74647891",
+    "current_password": "wrong_password",
+    "new_password": "short"
+}
+```
+
+**Expected Response:**
+```json
+{
+    "current_password": [
+        "Current password is incorrect."
+    ],
+    "new_password": [
+        "Password must be at least 8 characters long."
+    ]
+}
+```
+
 ## Event Operations
 
 ### Create Event (POST)
@@ -400,6 +542,64 @@ pm.test("Players have expected fields", function() {
 });
 ```
 
+#### Test Profile Update
+
+1. Create a request named "Test - Profile Update"
+2. Set method to PUT and URL to `{{baseUrl}}/players/profile/{{testUserId}}/`
+3. In Body, add valid update data:
+```json
+{
+    "auth_player_id": "{{testUserId}}",
+    "nickname": "test_updated_nickname",
+    "email": "test_updated@example.com"
+}
+```
+4. Go to the "Scripts" tab and in the "Post-response" section, add:
+```javascript
+pm.test("Status code is 200", function() {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Response has success message", function() {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData).to.have.property('message');
+    pm.expect(jsonData.message).to.eql('Profile updated successfully');
+});
+
+pm.test("Response contains updated player data", function() {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData).to.have.property('player');
+    pm.expect(jsonData.player).to.have.property('nickname');
+    pm.expect(jsonData.player).to.have.property('email');
+    pm.expect(jsonData.player.nickname).to.eql('test_updated_nickname');
+    pm.expect(jsonData.player.email).to.eql('test_updated@example.com');
+});
+```
+
+#### Test Profile Update Authentication
+
+1. Create a request named "Test - Profile Update Authentication"
+2. Set method to PUT and URL to `{{baseUrl}}/players/profile/{{testUserId}}/`
+3. In Body, add invalid authentication:
+```json
+{
+    "auth_player_id": "99999999",
+    "nickname": "unauthorized_update"
+}
+```
+4. Go to the "Scripts" tab and in the "Post-response" section, add:
+```javascript
+pm.test("Status should be 403 Forbidden", function() {
+    pm.response.to.have.status(403);
+});
+
+pm.test("Should return authentication error", function() {
+    var jsonData = pm.response.json();
+    pm.expect(jsonData).to.have.property('error');
+    pm.expect(jsonData.error).to.include('Authentication failed');
+});
+```
+
 ### Running Collection Tests
 
 1. Click on the collection name
@@ -463,7 +663,27 @@ var jsonData = pm.response.json();
 console.log("User logged in successfully");
 ```
 
-8. Continue adding numbered requests to complete your workflow
+8. Create a third request named "03 - Update Profile" for continuing the workflow
+9. Set the method to PUT and URL to `{{baseUrl}}/players/profile/{{workflow_user_id}}/`
+10. Add this pre-request script to get the user ID from the login response:
+```javascript
+// We're assuming the previous request (login) stored the user_id
+// In a real implementation, you'd extract this from the login response
+```
+11. Set the body to:
+```json
+{
+    "auth_player_id": "{{workflow_user_id}}",
+    "nickname": "updated_workflow_nickname",
+    "email": "{{workflow_email}}"
+}
+```
+12. In the post-response script, add:
+```javascript
+// Verify the profile was updated correctly
+var jsonData = pm.response.json();
+console.log("Profile updated successfully with new nickname: " + jsonData.player.nickname);
+```
 
 ### Use a Collection Runner to Execute the Workflow
 
