@@ -4,6 +4,8 @@ Before implementing Task 8 (Update Player Profile), let's practice with some exe
 
 ## Exercise 1: Understanding the Current Player Model
 
+**Why this is important:** To update player profiles, you first need to understand the structure of the Player model, its fields, and constraints. This will help you determine what can be updated and what validation rules already exist.
+
 First, let's examine the current Player model and understand its structure:
 
 1. Review the current Player model in `app_core/poker_event/models.py`:
@@ -52,7 +54,15 @@ First, let's examine the current Player model and understand its structure:
    False
    ```
 
+   **Key Findings:**
+   - The Player model has fields for email, nickname, and password
+   - It has methods for password handling (set_password, check_password)
+   - The email and nickname fields have unique constraints
+   - Understanding these constraints is essential when updating user profiles to avoid duplicate data
+
 ## Exercise 2: Practicing with Model Serializers
+
+**Why this is important:** Serializers are the backbone of our update feature. They convert complex data types (like model instances) to Python data types that can be easily rendered into JSON, and they handle validation and data conversion when updating models.
 
 Let's practice with DRF's ModelSerializer to understand how it works:
 
@@ -122,7 +132,14 @@ Let's practice with DRF's ModelSerializer to understand how it works:
    {'email': 'another@example.com', 'nickname': 'testnick'}
    ```
 
+   **Key Findings:**
+   - Serializers automatically validate model constraints like unique fields
+   - The `partial=True` parameter allows us to update only some fields
+   - For our profile update feature, we'll need to handle validation errors appropriately
+
 ## Exercise 3: Practice with Validation
+
+**Why this is important:** User inputs must be validated to ensure data integrity and security. For the profile update feature, we need to implement custom validation rules for email format, nickname uniqueness, and password security.
 
 Let's practice implementing custom validation in serializers:
 
@@ -183,9 +200,14 @@ Let's practice implementing custom validation in serializers:
      Result: {'nickname': [ErrorDetail(string='Nickname must be at least 5 characters', code='invalid')]}
    ```
    
-   This demonstrates how custom validation methods can be added to serializers to enforce specific business rules.
+   **Key Findings:**
+   - Custom validation methods allow us to implement business rules
+   - We can provide specific error messages for each validation rule
+   - For our profile update feature, we'll need similar validation for email format, password strength, etc.
 
 ## Exercise 4: Practice with Update Operations
+
+**Why this is important:** The core of our profile update feature will involve updating existing player records. This exercise shows how serializers handle the update process and how we can customize it.
 
 Let's practice updating model instances with serializers:
 
@@ -246,9 +268,14 @@ Let's practice updating model instances with serializers:
    Updated player: updated_name, test@example.com
    ```
    
-   This demonstrates how serializer's `update()` method is called when you call `save()` on an existing instance. The custom `update()` method allows you to control how the instance is updated.
+   **Key Findings:**
+   - The `update()` method lets us control exactly how model instances are updated
+   - We can add custom logic like password hashing in our update method
+   - For our profile update feature, we'll create a similar serializer with custom update logic
 
 ## Exercise 5: Set Up Postman for API Testing
+
+**Why this is important:** Once we implement the profile update feature, we need to test it. Postman is an excellent tool for testing RESTful APIs without writing code. It allows us to quickly verify that our endpoints work as expected.
 
 For testing REST APIs, Postman is an excellent tool. Let's set it up:
 
@@ -290,9 +317,17 @@ For testing REST APIs, Postman is an excellent tool. Let's set it up:
    **Expected Result:**
    You should have a Postman collection with two requests ready for testing. No output is expected at this stage since we're just setting up the test environment. You'll use these requests later when testing your implementation.
 
+   **Key Benefits:**
+   - Allows quick testing of API endpoints without writing code
+   - Provides a way to save and reuse API requests
+   - Helps document the API for other developers
+   - For our profile update feature, we'll add a new request to test the update endpoint
+
 Refer to our [Postman Testing Guide](POSTMAN_GUIDE_POKER.md) for more detailed instructions on API testing.
 
 ## Exercise 6: Explore Token Authentication
+
+**Why this is important:** Our profile update endpoint needs to be secured so that users can only update their own profiles. Token authentication is a common way to secure REST APIs and identify users.
 
 Let's understand how token authentication works:
 
@@ -352,6 +387,12 @@ Let's understand how token authentication works:
 
    **Expected Result:**
    You'll have a Postman request configured to use token authentication. When you send this request, the server should recognize your authenticated user if token authentication is properly set up.
+
+   **Key Benefits:**
+   - Allows us to identify which user is making a request
+   - Ensures users can only update their own profiles
+   - Provides a secure way to authenticate API requests
+   - For our profile update feature, we'll use token authentication to secure the endpoint
 
 ## Next Steps: Implementing Task 8
 
