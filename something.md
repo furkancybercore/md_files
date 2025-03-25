@@ -4,7 +4,7 @@ This document provides a comprehensive overview of the Poker Backend API, includ
 
 💡The API enforces various validation rules to ensure data integrity. If validation fails, the API will return a `400 Bad Request` error with details about the failed validation.
 
-## Notes
+## 📝 Notes
 
 #### Endpoints Status
 Endpoints are marked for their status
