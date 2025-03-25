@@ -6,7 +6,7 @@ This document provides a comprehensive overview of the Poker Backend API, includ
 
 ## Notes
 
-Endpoints are marked for their status
+####Endpoints are marked for their status
 - ✳️ fully implemented and should just work
 - ✴️ development in progress
 - ⛔ not yet implemented but planned
@@ -17,7 +17,7 @@ Base url for staging server:
 https://staging-pokerebot-backend.onrender.com
 ```
 
-#### Base url for production server:
+Base url for production server:
 ```
 https://pokerebot-backend-django.onrender.com
 ```
