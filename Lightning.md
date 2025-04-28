@@ -7,7 +7,10 @@
 ## 🔍 Key Features
 
 - **Zero Setup Cloud IDE**: Develop and manage AI projects entirely in the browser with integrated tools like VS Code and Jupyter Notebooks.
+
 - **Scalable Infrastructure**: Seamlessly scale from CPU to GPU resources depending on your project's needs.
+
+
 - **Free Compute Resources**: Lightning AI offers limited free access to **CPU**, **single-GPU**, and **multi-GPU** options. Useful for early development and testing phases. *(You can add screenshots here to show the available plans and options.)*
 - **Integrated ML Tools**: Built-in support for popular frameworks like PyTorch Lightning, Gradio, and Streamlit.
 - **Collaborative Environment**: Real-time team collaboration with shared environments and live coding.
